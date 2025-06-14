@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One90ps - Smart ERP for Healthcare & Agriculture</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        :root {
+            --primary-green: #006747;
+            --primary-gold: #F4B72F;
+            --accent-cyan: #00ffd5;
+            --dark-bg: #0a0b0d;
+            --darker-bg: #060708;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b3b8;
+            --text-muted: #8a8d93;
+            --shadow-glow: 0 0 40px rgba(0, 255, 213, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--darker-bg); }
+        ::-webkit-scrollbar-thumb { 
+            background: linear-gradient(var(--primary-green), var(--primary-gold));
+            border-radius: 4px;
+        }
+
+        /* Noise Texture Overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(0, 255, 213, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(244, 183, 47, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Premium Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 0;
+            z-index: 1000;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(0px);
+        }
+
+        .navbar.scrolled {
+            background: rgba(6, 7, 8, 0.95);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 15px 0;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+        }
+
+        .navbar-brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 800;
+            font-size: 28px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--primary-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            letter-spacing: -0.02em;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 40px;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-decoration: none;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 15px;
+            letter-spacing: 0.01em;
+            cursor: pointer;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--primary-gold));
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        .nav-link:hover::before {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: var(--accent-cyan);
+        }
+
+        .nav-link.active::before {
+            width: 100%;
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Page System */
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Hero Section - World Class */
+        .hero-section {
+            height: calc(100vh - 80px);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 255, 213, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 50% 120%, rgba(244, 183, 47, 0.04) 0%, transparent 60%),
+                linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+            overflow: hidden;
+        }
+
+        #hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 1000px;
+            padding: 0 40px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--glass-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--accent-cyan);
+            margin-bottom: 32px;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(3.5rem, 8vw, 7rem);
+            font-weight: 800;
+            line-height: 0.9;
+            margin-bottom: 24px;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-title-main {
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+        }
+
+        .hero-title-sub {
+            background: linear-gradient(135deg, var(--primary-gold) 0%, var(--primary-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 0.6em;
+            font-weight: 600;
+            display: block;
+            margin-top: 8px;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .hero-description {
+            font-size: 18px;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 48px;
+            line-height: 1.7;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Premium Buttons */
+        .btn {
+            position: relative;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            letter-spacing: 0.01em;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-gold));
+            color: white;
+            box-shadow: 0 8px 32px rgba(0, 103, 71, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 103, 71, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 255, 213, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 255, 213, 0.1);
+            border-color: rgba(0, 255, 213, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 255, 213, 0.2);
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .scroll-indicator:hover {
+            color: var(--accent-cyan);
+            transform: translateX(-50%) translateY(-4px);
+        }
+
+        .scroll-mouse {
+            width: 24px;
+            height: 40px;
+            border: 2px solid var(--text-muted);
+            border-radius: 12px;
+            position: relative;
+            transition: border-color 0.3s ease;
+        }
+
+        .scroll-indicator:hover .scroll-mouse {
+            border-color: var(--accent-cyan);
+        }
+
+        .scroll-wheel {
+            width: 3px;
+            height: 6px;
+            background: var(--accent-cyan);
+            border-radius: 2px;
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: scroll-wheel 2s infinite;
+        }
+
+        @keyframes scroll-wheel {
+            0% { top: 8px; opacity: 1; }
+            100% { top: 24px; opacity: 0; }
+        }
+
+        /* Sections */
+        .section {
+            padding: 120px 0;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: var(--glass-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--accent-cyan);
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .section-description {
+            font-size: 20px;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Premium Cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 32px;
+            margin-top: 80px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 40px;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 213, 0.5), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .card-icon.healthcare {
+            background: linear-gradient(135deg, rgba(244, 183, 47, 0.2), rgba(0, 103, 71, 0.2));
+            color: var(--primary-gold);
+        }
+
+        .card-icon.agriculture {
+            background: linear-gradient(135deg, rgba(0, 255, 213, 0.2), rgba(0, 103, 71, 0.2));
+            color: var(--accent-cyan);
+        }
+
+        .card-icon.erp {
+            background: linear-gradient(135deg, rgba(0, 103, 71, 0.2), rgba(244, 183, 47, 0.2));
+            color: var(--primary-green);
+        }
+
+        .card-icon.logistics {
+            background: linear-gradient(135deg, rgba(244, 183, 47, 0.2), rgba(0, 255, 213, 0.2));
+            color: var(--primary-gold);
+        }
+
+        .card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Feature List */
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 24px;
+        }
+
+        .feature-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list i {
+            color: var(--accent-cyan);
+            font-size: 14px;
+        }
+
+        /* Roadmap Section */
+        .roadmap-section {
+            background: 
+                radial-gradient(ellipse 60% 40% at 50% 0%, rgba(0, 103, 71, 0.03) 0%, transparent 70%),
+                var(--darker-bg);
+        }
+
+        .roadmap-timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .roadmap-timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--accent-cyan), var(--primary-gold));
+            transform: translateX(-50%);
+        }
+
+        .roadmap-item {
+            display: flex;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .roadmap-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .roadmap-content {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 0 32px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .roadmap-content:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .roadmap-status {
+            position: absolute;
+            left: 50%;
+            top: 32px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .roadmap-status.completed {
+            background: #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .roadmap-status.in-progress {
+            background: var(--primary-gold);
+            box-shadow: 0 0 20px rgba(244, 183, 47, 0.5);
+        }
+
+        .roadmap-status.planned {
+            background: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 255, 213, 0.5);
+        }
+
+        .roadmap-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .roadmap-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Tech Stack Section */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            margin-top: 60px;
+        }
+
+        .tech-category {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 32px;
+            backdrop-filter: blur(10px);
+        }
+
+        .tech-category-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: 20px;
+        }
+
+        .tech-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tech-list li {
+            padding: 8px 0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tech-list i {
+            font-size: 12px;
+            color: var(--primary-gold);
+        }
+
+        /* Contact Form */
+        .contact-form {
+            max-width: 600px;
+            margin: 0 auto;
+            margin-top: 60px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 16px;
+            background: var(--glass-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-submit {
+            width: 100%;
+            margin-top: 32px;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: 
+                radial-gradient(ellipse 80% 50% at 50% 50%, rgba(0, 255, 213, 0.08) 0%, transparent 70%),
+                var(--darker-bg);
+            text-align: center;
+        }
+
+        .cta-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            font-weight: 700;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--darker-bg);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 60px 0 40px;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .footer-text {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 80%;
+                max-width: 400px;
+                height: 100vh;
+                background: var(--darker-bg);
+                flex-direction: column;
+                padding: 80px 40px 40px;
+                gap: 24px;
+                transition: right 0.3s ease;
+                box-shadow: -20px 0 40px rgba(0, 0, 0, 0.3);
+            }
+            
+            .nav-links.active {
+                right: 0;
+            }
+            
+            .nav-container {
+                padding: 0 20px;
+            }
+            
+            .hero-content {
+                padding: 0 20px;
+            }
+            
+            .container {
+                padding: 0 20px;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            
+            .hero-cta {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .roadmap-timeline::before {
+                left: 20px;
+            }
+            
+            .roadmap-item {
+                flex-direction: column !important;
+                margin-left: 40px;
+            }
+            
+            .roadmap-content {
+                margin: 0;
+            }
+            
+            .roadmap-status {
+                left: -28px;
+            }
+            
+            .tech-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate-fade-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .animate-fade-scale {
+            animation: fadeInScale 0.6s ease-out forwards;
+        }
+
+        /* Utility Classes */
+        .opacity-0 { opacity: 0; }
+        .translate-y-8 { transform: translateY(32px); }
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a class="navbar-brand" onclick="navigateTo('home')">One90ps</a>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a class="nav-link" onclick="navigateTo('home')">Home</a></li>
+                <li><a class="nav-link" onclick="navigateTo('vision')">Vision</a></li>
+                <li><a class="nav-link" onclick="navigateTo('modules')">Modules</a></li>
+                <li><a class="nav-link" onclick="navigateTo('roadmap')">Roadmap</a></li>
+                <li><a class="nav-link" onclick="navigateTo('contact')">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <div id="home" class="page active">
+        <section class="hero-section">
+            <canvas id="hero-canvas"></canvas>
+            
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-sparkles"></i>
+                    <span>Revolutionary ERP Platform</span>
+                </div>
+                
+                <h1 class="hero-title">
+                    <span class="hero-title-main">One90ps</span>
+                    <span class="hero-title-sub">Smart ERP Ecosystem</span>
+                </h1>
+                
+                <p class="hero-subtitle">Healthcare & Agriculture Unified</p>
+                
+                <p class="hero-description">
+                    A modular, intelligent operations platform built for the critical sectors of health and agriculture, integrating HR, finance, logistics, and supply chain in one seamless, data-driven architecture.
+                </p>
+                
+                <div class="hero-cta">
+                    <button class="btn btn-primary" onclick="navigateTo('vision')">Discover the Vision</button>
+                    <button class="btn btn-secondary" onclick="navigateTo('modules')">Explore Modules</button>
+                </div>
+            </div>
+            
+            <div class="scroll-indicator" onclick="scrollToNextSection()">
+                <span>Scroll to explore</span>
+                <div class="scroll-mouse">
+                    <div class="scroll-wheel"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="home-about">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">The Future of Operations</div>
+                    <h2 class="section-title">What Is One90ps?</h2>
+                    <p class="section-description">
+                        <strong>Transforming Two of the World's Most Vital Sectors.</strong> One90ps is an ERP-style web platform currently under development, purpose-built for Healthcare and Agriculture organizations.
+                    </p>
+                </div>
+                
+                <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+                    <p style="font-size: 18px; color: var(--text-secondary); line-height: 1.7;">
+                        Whether you're running a hospital, managing a rural farm cooperative, or deploying regional healthcare programs, One90ps adapts to your operations and empowers smarter decision-making through intelligent automation and real-time insights.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="home-modules">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">Core Platform</div>
+                    <h2 class="section-title">Integrated Module System</h2>
+                    <p class="section-description">
+                        Comprehensive tools designed specifically for healthcare and agriculture sectors, with shared infrastructure for seamless operations.
+                    </p>
+                </div>
+                
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-icon healthcare">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <h3 class="card-title">Healthcare Management</h3>
+                        <p class="card-description">
+                            Complete patient management system with appointments, medical inventory, staff scheduling, billing & insurance integration, and comprehensive medical records management.
+                        </p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-icon agriculture">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                        <h3 class="card-title">Agriculture Operations</h3>
+                        <p class="card-description">
+                            Advanced farm & field management with crop cycle tracking, agri-finance tools, inventory management, soil & irrigation data, and worker coordination systems.
+                        </p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-icon erp">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <h3 class="card-title">Shared ERP Core</h3>
+                        <p class="card-description">
+                            Unified HR management, payroll processing, financial accounting, transaction tracking, and comprehensive budget planning across all operations.
+                        </p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-icon logistics">
+                            <i class="fas fa-shipping-fast"></i>
+                        </div>
+                        <h3 class="card-title">Logistics & Supply Chain</h3>
+                        <p class="card-description">
+                            Intelligent inventory movements, delivery optimization, vehicle management, route planning, and warehouse coordination systems.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2 class="cta-title">Ready to Transform Your Operations?</h2>
+                    <p class="section-description">
+                        Join us in building smarter, unified operations for healthcare and agriculture.
+                    </p>
+                    <div class="cta-buttons">
+                        <button class="btn btn-primary" onclick="navigateTo('contact')">Get Started</button>
+                        <button class="btn btn-secondary" onclick="navigateTo('roadmap')">View Roadmap</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Vision Page -->
+    <div id="vision" class="page">
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">Our Mission</div>
+                    <h2 class="section-title">The Vision Behind One90ps</h2>
+                    <p class="section-description">
+                        Building intelligent infrastructure for the sectors that matter most to humanity.
+                    </p>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-icon healthcare">
+                            <i class="fas fa-globe-africa"></i>
+                        </div>
+                        <h3 class="card-title">Global Impact</h3>
+                        <p class="card-description">
+                            Healthcare and agriculture are mission-critical in both emerging and developed economies. Our platform is designed to work everywhere, from rural clinics to urban hospitals, from small farms to agricultural cooperatives.
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon agriculture">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <h3 class="card-title">Breaking Silos</h3>
+                        <p class="card-description">
+                            Both industries suffer from poor digital integration, especially in supply chains and financial oversight. One90ps bridges the gap with practical tools that connect every part of your operation.
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon erp">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 class="card-title">Intelligent by Design</h3>
+                        <p class="card-description">
+                            Built with AI-ready architecture, our platform doesn't just store data – it helps you understand it. From predictive analytics to automated workflows, intelligence is woven into every feature.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">Target Users</div>
+                    <h2 class="section-title">Who Should Care About One90ps?</h2>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-icon healthcare">
+                            <i class="fas fa-hospital"></i>
+                        </div>
+                        <h3 class="card-title">Hospitals & Clinics</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Track patients, staff, medications</li>
+                            <li><i class="fas fa-check"></i> Manage appointments and schedules</li>
+                            <li><i class="fas fa-check"></i> Handle billing and insurance</li>
+                            <li><i class="fas fa-check"></i> Maintain compliance records</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon agriculture">
+                            <i class="fas fa-tractor"></i>
+                        </div>
+                        <h3 class="card-title">Farmers & Agri-Coops</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Manage fields and harvests</li>
+                            <li><i class="fas fa-check"></i> Track budgets and inventory</li>
+                            <li><i class="fas fa-check"></i> Monitor crop cycles</li>
+                            <li><i class="fas fa-check"></i> Coordinate workers and equipment</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon logistics">
+                            <i class="fas fa-landmark"></i>
+                        </div>
+                        <h3 class="card-title">Governments & NGOs</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Monitor delivery logistics</li>
+                            <li><i class="fas fa-check"></i> Track workforce deployment</li>
+                            <li><i class="fas fa-check"></i> Ensure compliance</li>
+                            <li><i class="fas fa-check"></i> Generate impact reports</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modules Page -->
+    <div id="modules" class="page">
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">Complete Solution</div>
+                    <h2 class="section-title">Comprehensive Module System</h2>
+                    <p class="section-description">
+                        Every tool you need to run modern healthcare and agriculture operations, integrated into one powerful platform.
+                    </p>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-icon healthcare">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <h3 class="card-title">Patient Management</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Electronic Health Records (EHR)</li>
+                            <li><i class="fas fa-check"></i> Appointment scheduling</li>
+                            <li><i class="fas fa-check"></i> Treatment history tracking</li>
+                            <li><i class="fas fa-check"></i> Prescription management</li>
+                            <li><i class="fas fa-check"></i> Lab results integration</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon healthcare">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <h3 class="card-title">Medical Inventory</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Medicine stock tracking</li>
+                            <li><i class="fas fa-check"></i> Expiry date monitoring</li>
+                            <li><i class="fas fa-check"></i> Automated reordering</li>
+                            <li><i class="fas fa-check"></i> Supplier management</li>
+                            <li><i class="fas fa-check"></i> Usage analytics</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon agriculture">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <h3 class="card-title">Crop Management</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Field mapping and tracking</li>
+                            <li><i class="fas fa-check"></i> Planting & harvest schedules</li>
+                            <li><i class="fas fa-check"></i> Yield predictions</li>
+                            <li><i class="fas fa-check"></i> Weather integration</li>
+                            <li><i class="fas fa-check"></i> Pest & disease tracking</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon agriculture">
+                            <i class="fas fa-water"></i>
+                        </div>
+                        <h3 class="card-title">Resource Management</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Irrigation scheduling</li>
+                            <li><i class="fas fa-check"></i> Soil health monitoring</li>
+                            <li><i class="fas fa-check"></i> Fertilizer tracking</li>
+                            <li><i class="fas fa-check"></i> Equipment maintenance</li>
+                            <li><i class="fas fa-check"></i> Resource optimization</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon erp">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="card-title">Financial Management</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Multi-currency accounting</li>
+                            <li><i class="fas fa-check"></i> Budget planning & tracking</li>
+                            <li><i class="fas fa-check"></i> Invoice & billing automation</li>
+                            <li><i class="fas fa-check"></i> Financial reporting</li>
+                            <li><i class="fas fa-check"></i> Tax compliance</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon logistics">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                        <h3 class="card-title">Supply Chain & Logistics</h3>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Real-time tracking</li>
+                            <li><i class="fas fa-check"></i> Route optimization</li>
+                            <li><i class="fas fa-check"></i> Warehouse management</li>
+                            <li><i class="fas fa-check"></i> Delivery scheduling</li>
+                            <li><i class="fas fa-check"></i> Fleet management</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Roadmap Page -->
+    <div id="roadmap" class="page">
+        <section class="section roadmap-section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">Development Progress</div>
+                    <h2 class="section-title">Building the Future</h2>
+                    <p class="section-description">
+                        Our systematic approach to creating a world-class ERP platform for healthcare and agriculture.
+                    </p>
+                </div>
+
+                <div class="roadmap-timeline">
+                    <div class="roadmap-item">
+                        <div class="roadmap-status completed"></div>
+                        <div class="roadmap-content">
+                            <h3 class="roadmap-title">ERP-grade PostgreSQL Schema</h3>
+                            <p class="roadmap-description">
+                                Designed and implemented a robust, scalable database architecture that supports complex healthcare and agriculture operations with full data integrity.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="roadmap-item">
+                        <div class="roadmap-status completed"></div>
+                        <div class="roadmap-content">
+                            <h3 class="roadmap-title">Healthcare & Agriculture Core Models</h3>
+                            <p class="roadmap-description">
+                                Created comprehensive data models for patients, medical records, crop cycles, farm management, and all supporting business operations.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="roadmap-item">
+                        <div class="roadmap-status in-progress"></div>
+                        <div class="roadmap-content">
+                            <h3 class="roadmap-title">Mock Data Generation</h3>
+                            <p class="roadmap-description">
+                                Building realistic test data using Python and Faker to simulate real-world scenarios and ensure our platform handles complex operational data.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="roadmap-item">
+                        <div class="roadmap-status planned"></div>
+                        <div class="roadmap-content">
+                            <h3 class="roadmap-title">Backend API Development</h3>
+                            <p class="roadmap-description">
+                                Implementing RESTful APIs using Flask/FastAPI to power all platform operations with secure, efficient data access and manipulation.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="roadmap-item">
+                        <div class="roadmap-status planned"></div>
+                        <div class="roadmap-content">
+                            <h3 class="roadmap-title">Frontend UI & Dashboards</h3>
+                            <p class="roadmap-description">
+                                Creating intuitive, responsive interfaces using React/Next.js that make complex operations simple and accessible for all users.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="roadmap-item">
+                        <div class="roadmap-status planned"></div>
+                        <div class="roadmap-content">
+                            <h3 class="roadmap-title">AI Insights & Advanced Features</h3>
+                            <p class="roadmap-description">
+                                Integrating machine learning for predictive analytics, IoT sensor support, mobile applications, and cloud deployment options.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">Technology</div>
+                    <h2 class="section-title">Technical Stack</h2>
+                    <p class="section-description">
+                        Built with modern, proven technologies for reliability and scalability.
+                    </p>
+                </div>
+
+                <div class="tech-grid">
+                    <div class="tech-category">
+                        <h3 class="tech-category-title">Backend</h3>
+                        <ul class="tech-list">
+                            <li><i class="fas fa-circle"></i> PostgreSQL Database</li>
+                            <li><i class="fas fa-circle"></i> Flask / FastAPI</li>
+                            <li><i class="fas fa-circle"></i> Python 3.9+</li>
+                            <li><i class="fas fa-circle"></i> SQLAlchemy ORM</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-category">
+                        <h3 class="tech-category-title">Frontend</h3>
+                        <ul class="tech-list">
+                            <li><i class="fas fa-circle"></i> React / Next.js</li>
+                            <li><i class="fas fa-circle"></i> TypeScript</li>
+                            <li><i class="fas fa-circle"></i> Tailwind CSS</li>
+                            <li><i class="fas fa-circle"></i> Chart.js / D3.js</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-category">
+                        <h3 class="tech-category-title">Infrastructure</h3>
+                        <ul class="tech-list">
+                            <li><i class="fas fa-circle"></i> Docker Containers</li>
+                            <li><i class="fas fa-circle"></i> Redis Caching</li>
+                            <li><i class="fas fa-circle"></i> AWS / Azure Cloud</li>
+                            <li><i class="fas fa-circle"></i> CI/CD Pipeline</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-category">
+                        <h3 class="tech-category-title">Future Additions</h3>
+                        <ul class="tech-list">
+                            <li><i class="fas fa-circle"></i> AI/ML Integration</li>
+                            <li><i class="fas fa-circle"></i> IoT Sensor Support</li>
+                            <li><i class="fas fa-circle"></i> Mobile Applications</li>
+                            <li><i class="fas fa-circle"></i> Blockchain for Supply Chain</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Contact Page -->
+    <div id="contact" class="page">
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">Get In Touch</div>
+                    <h2 class="section-title">Join the Revolution</h2>
+                    <p class="section-description">
+                        Whether you're interested in implementing One90ps, partnering with us, or contributing to development, we'd love to hear from you.
+                    </p>
+                </div>
+
+                <form class="contact-form" onsubmit="handleContactSubmit(event)">
+                    <div class="form-group">
+                        <label class="form-label" for="name">Your Name</label>
+                        <input type="text" id="name" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="email">Email Address</label>
+                        <input type="email" id="email" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="organization">Organization</label>
+                        <input type="text" id="organization" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="interest">Area of Interest</label>
+                        <select id="interest" class="form-input">
+                            <option value="">Select an option</option>
+                            <option value="healthcare">Healthcare Implementation</option>
+                            <option value="agriculture">Agriculture Implementation</option>
+                            <option value="partnership">Partnership Opportunity</option>
+                            <option value="development">Development Contribution</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="message">Your Message</label>
+                        <textarea id="message" class="form-textarea" required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary form-submit">Send Message</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="section cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2 class="cta-title">Ready to Get Started?</h2>
+                    <p class="section-description">
+                        Explore how One90ps can transform your operations today.
+                    </p>
+                    <div class="cta-buttons">
+                        <button class="btn btn-primary" onclick="navigateTo('modules')">Explore Features</button>
+                        <button class="btn btn-secondary" onclick="navigateTo('roadmap')">View Progress</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>One90ps</h4>
+                <p style="color: var(--text-secondary); margin-top: 12px;">
+                    Intelligent ERP solutions for healthcare and agriculture operations.
+                </p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Platform</h4>
+                <ul class="footer-links">
+                    <li><a onclick="navigateTo('vision')">Vision</a></li>
+                    <li><a onclick="navigateTo('modules')">Modules</a></li>
+                    <li><a onclick="navigateTo('roadmap')">Roadmap</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Solutions</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Healthcare</a></li>
+                    <li><a href="#">Agriculture</a></li>
+                    <li><a href="#">Supply Chain</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <ul class="footer-links">
+                    <li><a onclick="navigateTo('contact')">Contact Us</a></li>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">Support</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p class="footer-text">© 2024 One90ps. Building the future of healthcare and agriculture operations.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Page Navigation System
+        function navigateTo(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.textContent.toLowerCase() === pageId || 
+                    (pageId === 'home' && link.textContent === 'Home')) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Close mobile menu if open
+            document.getElementById('navLinks').classList.remove('active');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+
+        // Smart Scroll Indicator
+        function scrollToNextSection() {
+            const currentPage = document.querySelector('.page.active');
+            const heroSection = currentPage.querySelector('.hero-section');
+            const nextSection = heroSection.nextElementSibling;
+            
+            if (nextSection) {
+                nextSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Contact Form Handler
+        function handleContactSubmit(event) {
+            event.preventDefault();
+            alert('Thank you for your interest! We will get back to you soon.');
+            event.target.reset();
+        }
+
+        // Three.js Background Animation
+        let scene, camera, renderer, particles;
+
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('hero-canvas'),
+                alpha: true,
+                antialias: true
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            
+            // Create particles
+            const geometry = new THREE.BufferGeometry();
+            const vertices = [];
+            const colors = [];
+            
+            for (let i = 0; i < 1000; i++) {
+                vertices.push(
+                    Math.random() * 2000 - 1000,
+                    Math.random() * 2000 - 1000,
+                    Math.random() * 2000 - 1000
+                );
+                
+                const color = new THREE.Color();
+                color.setHSL(Math.random() * 0.1 + 0.5, 0.7, 0.5);
+                colors.push(color.r, color.g, color.b);
+            }
+            
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            
+            const material = new THREE.PointsMaterial({
+                size: 2,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+            
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+            
+            camera.position.z = 500;
+            
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            particles.rotation.x += 0.0001;
+            particles.rotation.y += 0.0002;
+            
+            const positions = particles.geometry.attributes.position.array;
+            for (let i = 0; i < positions.length; i += 3) {
+                positions[i + 1] += Math.sin(Date.now() * 0.001 + i) * 0.1;
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
+            
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initThreeJS();
+            
+            // Animate elements on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -100px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(30px)';
+                section.style.transition = 'all 0.6s ease-out';
+                observer.observe(section);
+            });
+            
+            // GSAP Animations
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // Animate cards on scroll
+            gsap.utils.toArray('.card').forEach((card, i) => {
+                gsap.fromTo(card, 
+                    {
+                        opacity: 0,
+                        y: 50,
+                        scale: 0.95
+                    },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        duration: 0.6,
+                        delay: i * 0.1,
+                        ease: "power2.out",
+                        scrollTrigger: {
+                            trigger: card,
+                            start: "top 80%",
+                            end: "bottom 20%",
+                            toggleActions: "play none none reverse"
+                        }
+                    }
+                );
+            });
+            
+            // Animate roadmap items
+            gsap.utils.toArray('.roadmap-item').forEach((item, i) => {
+                gsap.fromTo(item.querySelector('.roadmap-content'), 
+                    {
+                        opacity: 0,
+                        x: i % 2 === 0 ? -50 : 50
+                    },
+                    {
+                        opacity: 1,
+                        x: 0,
+                        duration: 0.8,
+                        ease: "power2.out",
+                        scrollTrigger: {
+                            trigger: item,
+                            start: "top 80%",
+                            end: "bottom 20%",
+                            toggleActions: "play none none reverse"
+                        }
+                    }
+                );
+            });
+            
+            // Parallax effect for hero section
+            gsap.to('.hero-content', {
+                y: -100,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: '.hero-section',
+                    start: "top top",
+                    end: "bottom top",
+                    scrub: true
+                }
+            });
+            
+            // Smart scroll indicator behavior
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            if (scrollIndicator) {
+                // Hide scroll indicator when user scrolls
+                let scrollTimeout;
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 100) {
+                        scrollIndicator.style.opacity = '0';
+                        scrollIndicator.style.pointerEvents = 'none';
+                    } else {
+                        scrollIndicator.style.opacity = '1';
+                        scrollIndicator.style.pointerEvents = 'auto';
+                    }
+                    
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        if (window.scrollY < 100) {
+                            scrollIndicator.style.opacity = '1';
+                            scrollIndicator.style.pointerEvents = 'auto';
+                        }
+                    }, 1000);
+                });
+            }
+            
+            // Add hover effects to buttons
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.addEventListener('mouseenter', (e) => {
+                    gsap.to(e.target, {
+                        scale: 1.05,
+                        duration: 0.3,
+                        ease: "power2.out"
+                    });
+                });
+                
+                btn.addEventListener('mouseleave', (e) => {
+                    gsap.to(e.target, {
+                        scale: 1,
+                        duration: 0.3,
+                        ease: "power2.out"
+                    });
+                });
+            });
+            
+            // Add interactive glow effect to cards
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const deltaX = (x - centerX) / centerX;
+                    const deltaY = (y - centerY) / centerY;
+                    
+                    card.style.transform = `translateY(-8px) rotateY(${deltaX * 5}deg) rotateX(${-deltaY * 5}deg)`;
+                    card.style.transition = 'transform 0.1s ease-out';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0) rotateY(0) rotateX(0)';
+                    card.style.transition = 'transform 0.3s ease-out';
+                });
+            });
+            
+            // Tech stack animation
+            gsap.utils.toArray('.tech-category').forEach((category, i) => {
+                gsap.fromTo(category, 
+                    {
+                        opacity: 0,
+                        y: 30,
+                        scale: 0.9
+                    },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        duration: 0.6,
+                        delay: i * 0.15,
+                        ease: "power2.out",
+                        scrollTrigger: {
+                            trigger: category,
+                            start: "top 85%",
+                            end: "bottom 15%",
+                            toggleActions: "play none none reverse"
+                        }
+                    }
+                );
+            });
+            
+            // Form field animations
+            document.querySelectorAll('.form-input, .form-textarea').forEach(field => {
+                field.addEventListener('focus', () => {
+                    gsap.to(field, {
+                        scale: 1.02,
+                        duration: 0.2,
+                        ease: "power2.out"
+                    });
+                });
+                
+                field.addEventListener('blur', () => {
+                    gsap.to(field, {
+                        scale: 1,
+                        duration: 0.2,
+                        ease: "power2.out"
+                    });
+                });
+            });
+            
+            // Initialize page with URL hash
+            const hash = window.location.hash.slice(1);
+            if (hash && document.getElementById(hash)) {
+                navigateTo(hash);
+            }
+            
+            // Update URL hash on navigation
+            const originalNavigateTo = window.navigateTo;
+            window.navigateTo = function(pageId) {
+                originalNavigateTo(pageId);
+                window.location.hash = pageId;
+            };
+            
+            // Handle browser back/forward buttons
+            window.addEventListener('popstate', () => {
+                const hash = window.location.hash.slice(1);
+                if (hash && document.getElementById(hash)) {
+                    originalNavigateTo(hash);
+                } else {
+                    originalNavigateTo('home');
+                }
+            });
+        });
+
+        // Enhanced scroll animations
+        let lastScrollY = window.scrollY;
+        let ticking = false;
+
+        function updateScrollAnimations() {
+            const scrollY = window.scrollY;
+            const direction = scrollY > lastScrollY ? 'down' : 'up';
+            
+            // Parallax effects for various elements
+            document.querySelectorAll('[data-parallax]').forEach(element => {
+                const speed = element.dataset.parallax || 0.5;
+                const yPos = -(scrollY * speed);
+                element.style.transform = `translateY(${yPos}px)`;
+            });
+            
+            lastScrollY = scrollY;
+            ticking = false;
+        }
+
+        function requestTick() {
+            if (!ticking) {
+                window.requestAnimationFrame(updateScrollAnimations);
+                ticking = true;
+            }
+        }
+
+        window.addEventListener('scroll', requestTick);
+
+        // Add loading animation
+        window.addEventListener('DOMContentLoaded', () => {
+            document.body.style.opacity = '0';
+            gsap.to(document.body, {
+                opacity: 1,
+                duration: 0.6,
+                ease: "power2.out"
+            });
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                // Close mobile menu if open
+                document.getElementById('navLinks').classList.remove('active');
+            }
+        });
+
+        // Touch gesture support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                const navLinks = document.getElementById('navLinks');
+                if (diff > 0 && !navLinks.classList.contains('active')) {
+                    // Swipe left - open menu
+                    navLinks.classList.add('active');
+                } else if (diff < 0 && navLinks.classList.contains('active')) {
+                    // Swipe right - close menu
+                    navLinks.classList.remove('active');
+                }
+            }
+        }
+
+        // Performance optimization - lazy load images if any
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.classList.remove('lazy');
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('img.lazy').forEach(img => {
+                imageObserver.observe(img);
+            });
+        }
+
+        // Add smooth reveal animation for section badges
+        gsap.utils.toArray('.section-badge').forEach(badge => {
+            gsap.fromTo(badge, 
+                {
+                    opacity: 0,
+                    scale: 0.8,
+                    y: 20
+                },
+                {
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                    duration: 0.6,
+                    ease: "back.out(1.7)",
+                    scrollTrigger: {
+                        trigger: badge,
+                        start: "top 90%",
+                        end: "bottom 10%",
+                        toggleActions: "play none none reverse"
+                    }
+                }
+            );
+        });
+
+        // Create floating particles effect for sections
+        function createFloatingParticles(container) {
+            const particleCount = 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.width = '4px';
+                particle.style.height = '4px';
+                particle.style.backgroundColor = 'rgba(0, 255, 213, 0.3)';
+                particle.style.borderRadius = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                
+                container.appendChild(particle);
+                
+                gsap.to(particle, {
+                    y: -100,
+                    x: (Math.random() - 0.5) * 100,
+                    opacity: 0,
+                    duration: 3 + Math.random() * 2,
+                    repeat: -1,
+                    delay: Math.random() * 3,
+                    ease: "power1.out"
+                });
+            }
+        }
+
+        // Add particles to hero section
+        const heroSection = document.querySelector('.hero-section');
+        if (heroSection) {
+            createFloatingParticles(heroSection);
+        }
+    </script>
+</body>
+</html>
